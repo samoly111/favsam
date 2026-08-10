@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>"Kiosco" Los Primos - Sistema</title>
+    <style>
+        /* --- ESTILOS DE FONDO Y DECORACIÓN --- */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            color: #333; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            
+            /* Imagen de fondo de golosinas */
+            background-image: url('https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Capa oscura semitransparente sobre el fondo para que no brille tanto */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+
+        /* Cartel principal del negocio */
+        .header-negocio {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 3px dashed #ff4081; /* Borde estilo caramelo */
+        }
+
+        .header-negocio h1 {
+            margin: 0;
+            color: #d81b60;
+            font-size: 36px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* --- ESTILOS DEL SISTEMA --- */
+        .nav-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .nav-btn { flex: 1; padding: 15px; font-size: 18px; font-weight: bold; background-color: rgba(255,255,255,0.8); color: #333; border: 2px solid transparent; border-radius: 8px; cursor: pointer; transition: 0.3s;}
+        .nav-btn:hover { background-color: white; }
+        .nav-btn.activo { background-color: #ff4081; color: white; border: 2px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        
+        .vista { display: none; }
+        .vista.activa { display: block; }
+
+        /* Efecto de "cristal" en las tarjetas para que se vea un poco el fondo */
+        .tarjeta { 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            margin-bottom: 20px; 
+        }
+
+        .grupo-input { margin-bottom: 15px; display: flex; gap: 10px; align-items: flex-end; }
+        .grupo-input > div { flex: 1; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #444; }
+        input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        input:focus { outline: none; border-color: #ff4081; box-shadow: 0 0 5px rgba(255,64,129,0.5); }
+        
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background-color: #45a049; }
+        .btn-accion { padding: 5px 10px; font-size: 14px; margin-right: 5px; }
+        .btn-editar { background-color: #ff9800; }
+        .btn-eliminar { background-color: #f44336; }
+        .btn-cancelar { background-color: #777; display: none; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #333; color: white; }
+        
+        .total-container { text-align: right; font-size: 24px; font-weight: bold; margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 8px; border-left: 5px solid #4CAF50; }
+        .btn-cobrar { background-color: #2196F3; font-size: 20px; width: 100%; padding: 15px; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .btn-cobrar:hover { background-color: #1976D2; }
+    </style>
+</head>
+<body>
+
+    <!-- Cartel del Negocio -->
+    <div class="header-negocio">
+        <h1>🍬 "Kiosco" Los Primos 🍫</h1>
+    </div>
+
+    <!-- Barra de Navegación -->
+    <div class="nav-bar">
+        <button class="nav-btn activo" id="btn-nav-caja" onclick="cambiarVista('caja')">🛒 Caja (Punto de Venta)</button>
+        <button class="nav-btn" id="btn-nav-catalogo" onclick="cambiarVista('catalogo')">📦 Catálogo e Inventario</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA: CAJA (PUNTO DE VENTA)               -->
+    <!-- ========================================== -->
+    <div id="vista-caja" class="vista activa">
+        <div class="tarjeta">
+            <h3 style="margin-top: 0; color: #d81b60;">Buscador de Productos</h3>
+            <div class="grupo-input">
+                <div>
+                    <label for="buscador">Buscar por Nombre o Código:</label>
+                    <input type="text" id="buscador" placeholder="Ej: Alfajor o 779..." onkeypress="manejarEnter(event)">
+                </div>
+                <button onclick="buscarYAgregar()">Agregar al Ticket</button>
+            </div>
+            <select id="sugerencias" style="display: none;" onchange="seleccionarSugerencia()"></select>
+        </div>
+
+        <div class="tarjeta">
+            <h3 style="margin-top: 0; color: #d81b60;">Ticket Actual</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio Unit.</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-carrito"></tbody>
+            </table>
+            <div class="total-container">
+                TOTAL: $<span id="total-caja">0.00</span>
+            </div>
+            <button class="btn-cobrar" onclick="cobrar()">💵 Procesar Venta y Cobrar</button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA: CATÁLOGO E INVENTARIO               -->
+    <!-- ========================================== -->
+    <div id="vista-catalogo" class="vista">
+        <div class="tarjeta">
+            <h3 id="titulo-formulario" style="margin-top: 0; color: #d81b60;">Agregar Nueva Golosina</h3>
+            <form id="form-producto">
+                <input type="hidden" id="producto-id">
+                <div class="grupo-input">
+                    <div>
+                        <label for="codigo">Código de Barras (Opcional):</label>
+                        <input type="text" id="codigo" placeholder="Ej: 779123456789">
+                    </div>
+                    <div>
+                        <label for="nombre">Nombre del Producto:</label>
+                        <input type="text" id="nombre" required>
+                    </div>
+                </div>
+                <div class="grupo-input">
+                    <div>
+                        <label for="precio">Precio de Venta ($):</label>
+                        <input type="number" id="precio" step="0.01" required>
+                    </div>
+                    <div>
+                        <label for="stock">Stock Actual:</label>
+                        <input type="number" id="stock" required>
+                    </div>
+                </div>
+                <button type="submit" id="btn-guardar">Guardar Producto</button>
+                <button type="button" id="btn-cancelar" class="btn-cancelar btn-accion" onclick="resetearFormulario()">Cancelar</button>
+            </form>
+        </div>
+
+        <div class="tarjeta">
+            <h3 style="margin-top: 0; color: #d81b60;">Catálogo Actual</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-productos"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- LÓGICA DEL SISTEMA (JAVASCRIPT)            -->
+    <!-- ========================================== -->
+    <script>
+        let db;
+        let inventarioMemoria = []; 
+        let carrito = []; 
+
+        function cambiarVista(vista) {
+            document.querySelectorAll('.vista').forEach(el => el.classList.remove('activa'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('activo'));
+            
+            document.getElementById(`vista-${vista}`).classList.add('activa');
+            document.getElementById(`btn-nav-${vista}`).classList.add('activo');
+
+            if(vista === 'caja') {
+                document.getElementById('buscador').focus();
+            }
+        }
+
+        const peticion = indexedDB.open("KioscoGolosinasDB", 1);
+        
+        peticion.onupgradeneeded = function(e) {
+            db = e.target.result;
+            const almacen = db.createObjectStore("productos", { keyPath: "id", autoIncrement: true });
+            almacen.createIndex("codigo", "codigo", { unique: false });
+        };
+        
+        peticion.onsuccess = function(e) {
+            db = e.target.result;
+            cargarInventario(); 
+        };
+
+        function cargarInventario() {
+            inventarioMemoria = [];
+            const tabla = document.getElementById('tabla-productos');
+            tabla.innerHTML = ""; 
+
+            const transaccion = db.transaction(["productos"], "readonly");
+            const almacen = transaccion.objectStore("productos");
+            const cursorRequest = almacen.openCursor();
+
+            cursorRequest.onsuccess = function(e) {
+                const cursor = e.target.result;
+                if (cursor) {
+                    inventarioMemoria.push(cursor.value); 
+                    
+                    tabla.innerHTML += `
+                        <tr>
+                            <td>${cursor.value.codigo}</td>
+                            <td>${cursor.value.nombre}</td>
+                            <td>$${cursor.value.precio.toFixed(2)}</td>
+                            <td>${cursor.value.stock}</td>
+                            <td>
+                                <button class="btn-accion btn-editar" onclick="cargarParaEditar(${cursor.value.id})">Editar</button>
+                                <button class="btn-accion btn-eliminar" onclick="eliminarProducto(${cursor.value.id})">Borrar</button>
+                            </td>
+                        </tr>
+                    `;
+                    cursor.continue(); 
+                }
+            };
+        }
+
+        function manejarEnter(evento) {
+            if (evento.key === "Enter") buscarYAgregar();
+        }
+
+        function buscarYAgregar() {
+            const input = document.getElementById('buscador').value.trim().toLowerCase();
+            if (!input) return;
+
+            const productosEncontrados = inventarioMemoria.filter(p => 
+                p.codigo.toLowerCase() === input || p.nombre.toLowerCase().includes(input)
+            );
+
+            if (productosEncontrados.length === 1) {
+                agregarAlCarrito(productosEncontrados[0]);
+                document.getElementById('buscador').value = ""; 
+                document.getElementById('sugerencias').style.display = 'none';
+            } else if (productosEncontrados.length > 1) {
+                const select = document.getElementById('sugerencias');
+                select.innerHTML = '<option value="">Seleccione una opción...</option>';
+                productosEncontrados.forEach(p => {
+                    select.innerHTML += `<option value="${p.id}">${p.nombre} - $${p.precio}</option>`;
+                });
+                select.style.display = 'block';
+            } else {
+                alert("Producto no encontrado en el catálogo.");
+            }
+        }
+
+        function seleccionarSugerencia() {
+            const select = document.getElementById('sugerencias');
+            const idSeleccionado = parseInt(select.value);
+            
+            if (idSeleccionado) {
+                const producto = inventarioMemoria.find(p => p.id === idSeleccionado);
+                agregarAlCarrito(producto);
+                document.getElementById('buscador').value = "";
+                select.style.display = 'none';
+            }
+        }
+
+        function agregarAlCarrito(producto) {
+            const itemExistente = carrito.find(item => item.id === producto.id);
+            if (itemExistente) itemExistente.cantidad += 1; 
+            else carrito.push({ ...producto, cantidad: 1 }); 
+            actualizarCarrito();
+        }
+
+        function cambiarCantidad(id, nuevaCantidad) {
+            const item = carrito.find(item => item.id === id);
+            if (item) {
+                item.cantidad = parseInt(nuevaCantidad) || 1; 
+                actualizarCarrito();
+            }
+        }
+
+        function quitarDelCarrito(id) {
+            carrito = carrito.filter(item => item.id !== id);
+            actualizarCarrito();
+        }
+
+        function actualizarCarrito() {
+            const tabla = document.getElementById('tabla-carrito');
+            tabla.innerHTML = "";
+            let total = 0;
+
+            carrito.forEach(item => {
+                const subtotal = item.precio * item.cantidad;
+                total += subtotal;
+
+                tabla.innerHTML += `
+                    <tr>
+                        <td>${item.nombre}</td>
+                        <td>$${item.precio.toFixed(2)}</td>
+                        <td>
+                            <input type="number" style="width: 60px; padding: 5px;" value="${item.cantidad}" min="1" onchange="cambiarCantidad(${item.id}, this.value)">
+                        </td>
+                        <td>$${subtotal.toFixed(2)}</td>
+                        <td>
+                            <button class="btn-accion btn-eliminar" onclick="quitarDelCarrito(${item.id})">Quitar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('total-caja').textContent = total.toFixed(2);
+        }
+
+        function cobrar() {
+            if (carrito.length === 0) {
+                alert("El ticket está vacío.");
+                return;
+            }
+
+            const total = parseFloat(document.getElementById('total-caja').textContent);
+            const entradaTexto = prompt(`Total a cobrar: $${total.toFixed(2)}\n\n¿Con cuánto abona el cliente?\n(Deje en blanco si paga justo o con método electrónico)`);
+
+            if (entradaTexto === null) return; 
+
+            let mensajeVuelto = "";
+
+            if (entradaTexto.trim() !== "") {
+                const abona = parseFloat(entradaTexto);
+                if (isNaN(abona)) return alert("❌ Por favor, ingrese un monto válido (solo números).");
+                if (abona < total) return alert(`❌ El monto ingresado ($${abona.toFixed(2)}) es menor al total de la venta ($${total.toFixed(2)}).`);
+                
+                const vuelto = abona - total;
+                mensajeVuelto = `\n\n💵 Abonó: $${abona.toFixed(2)}\n💰 VUELTO A ENTREGAR: $${vuelto.toFixed(2)}`;
+            }
+
+            const transaccion = db.transaction(["productos"], "readwrite");
+            const almacen = transaccion.objectStore("productos");
+
+            carrito.forEach(itemTicket => {
+                const peticionGet = almacen.get(itemTicket.id);
+                peticionGet.onsuccess = function(e) {
+                    const productoBD = e.target.result;
+                    if(productoBD) {
+                        productoBD.stock -= itemTicket.cantidad; 
+                        almacen.put(productoBD); 
+                    }
+                };
+            });
+
+            transaccion.oncomplete = function() {
+                alert(`✅ ¡Venta procesada con éxito!\n\nTotal: $${total.toFixed(2)}${mensajeVuelto}`);
+                carrito = []; 
+                actualizarCarrito();
+                cargarInventario(); 
+            };
+        }
+
+        document.getElementById('form-producto').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idActual = document.getElementById('producto-id').value;
+            const producto = {
+                codigo: document.getElementById('codigo').value || "-",
+                nombre: document.getElementById('nombre').value,
+                precio: parseFloat(document.getElementById('precio').value),
+                stock: parseInt(document.getElementById('stock').value)
+            };
+            
+            if (idActual) producto.id = parseInt(idActual);
+
+            const transaccion = db.transaction(["productos"], "readwrite");
+            transaccion.objectStore("productos").put(producto).onsuccess = function() {
+                resetearFormulario();
+                cargarInventario(); 
+                alert("Producto guardado correctamente.");
+            };
+        });
+
+        function cargarParaEditar(id) {
+            const producto = inventarioMemoria.find(p => p.id === id);
+            if(producto) {
+                document.getElementById('producto-id').value = producto.id;
+                document.getElementById('codigo').value = producto.codigo !== "-" ? producto.codigo : "";
+                document.getElementById('nombre').value = producto.nombre;
+                document.getElementById('precio').value = producto.precio;
+                document.getElementById('stock').value = producto.stock;
+                
+                document.getElementById('titulo-formulario').textContent = "✏️ Editar Golosina";
+                document.getElementById('btn-guardar').textContent = "Actualizar Producto";
+                document.getElementById('btn-cancelar').style.display = "inline-block";
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function eliminarProducto(id) {
+            if (confirm("¿Seguro que deseas eliminar este producto?")) {
+                const transaccion = db.transaction(["productos"], "readwrite");
+                transaccion.objectStore("productos").delete(id).onsuccess = function() {
+                    cargarInventario();
+                };
+            }
+        }
+
+        function resetearFormulario() {
+            document.getElementById('form-producto').reset();
+            document.getElementById('producto-id').value = "";
+            document.getElementById('titulo-formulario').textContent = "Agregar Nueva Golosina";
+            document.getElementById('btn-guardar').textContent = "Guardar Producto";
+            document.getElementById('btn-cancelar').style.display = "none";
+        }
+    </script>
+</body>
+</html>

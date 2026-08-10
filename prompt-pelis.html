@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de películas y series</title>
+    <style>
+        :root {
+            --primary: #ff6600;
+            --primary-hover: #e65c00;
+            --bg: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --input-bg: #111111;
+            --text-main: #f5f5f5;
+            --text-muted: #a0a0a0;
+            --border: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 550px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 10px 30px rgba(255, 102, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-main {
+            background-color: var(--primary);
+            color: #000000;
+            font-weight: 700;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-main:hover {
+            background-color: var(--primary-hover);
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: #555;
+        }
+
+        .btn-clear {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-clear:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #ff4444;
+            border-color: #ff4444;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔥 Buscador de películas y series</h1>
+    <p class="subtitle">Ingresa el título o frase para personalizar el prompt y luego envíalo a Venice.ai.</p>
+
+    <div class="form-group">
+        <label for="search-input">Título o frase a buscar:</label>
+        <input type="text" id="search-input" placeholder="Ej: Batman, El Encargado Season 2, etc..." autocomplete="off">
+    </div>
+
+    <div class="actions">
+        <button class="btn-main" onclick="copyAndOpenVenice()">🚀 Copiar e Ir a Venice.ai</button>
+        <button class="btn-secondary" onclick="copyPrompt()">📋 Solo Copiar</button>
+        <button class="btn-clear" onclick="clearInput()">Limpiar</button>
+    </div>
+</div>
+
+<div id="toast" class="toast">¡Prompt copiado al portapapeles!</div>
+
+<script>
+    const template = `Actúa como un buscador experto en contenido multimedia. Tu objetivo es localizar fuentes gratuitas y no oficiales para ver {TARGET} en audio español latino.
+
+Criterios de búsqueda:
+
+- Busca exclusivamente en sitios de streaming gratuito, servidores de descarga directa o foros de contenido.
+- Busca únicamente en sitios de streaming gratuitos, servidores de descarga directa o foros de contenido.
+
+- Ignora completamente resultados de plataformas oficiales (Netflix, HBO, Prime Video, Disney+, etc.).
+
+- Prioriza enlaces a servidores como Direct, Streamtape, Fembed, Doodstream, o similares.
+- Priorice enlaces a servidores como Direct, Streamtape, Fembed, Doodstream, o similares.
+
+- Descarta cualquier enlace que requiera pago, suscripción obligatoria o registro con método de pago.
+
+- Busca versiones de alta calidad si es posible, pero la disponibilidad es la prioridad.
+
+Formato de salida:
+
+- Presenta una lista con el link de la pagina `;
+
+    const input = document.getElementById('search-input');
+    const toast = document.getElementById('toast');
+
+    function getGeneratedPrompt() {
+        const val = input.value.trim();
+        const replacement = val !== "" ? val : "[ Inserte contenido aquí ]";
+        return template.replace('{TARGET}', replacement);
+    }
+
+    function clearInput() {
+        input.value = '';
+        input.focus();
+    }
+
+    function copyPrompt() {
+        const textToCopy = getGeneratedPrompt();
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast("¡Prompt copiado al portapapeles!");
+        }).catch(() => {
+            const hiddenTextarea = document.createElement("textarea");
+            hiddenTextarea.value = textToCopy;
+            document.body.appendChild(hiddenTextarea);
+            hiddenTextarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(hiddenTextarea);
+            showToast("¡Prompt copiado al portapapeles!");
+        });
+    }
+
+    function copyAndOpenVenice() {
+        const textToCopy = getGeneratedPrompt();
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showToast("¡Copiado! Abriendo Venice.ai...");
+            setTimeout(() => {
+                window.open("https://venice.ai/", "_blank");
+            }, 500);
+        }).catch(() => {
+            const hiddenTextarea = document.createElement("textarea");
+            hiddenTextarea.value = textToCopy;
+            document.body.appendChild(hiddenTextarea);
+            hiddenTextarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(hiddenTextarea);
+            showToast("¡Copiado! Abriendo Venice.ai...");
+            setTimeout(() => {
+                window.open("https://venice.ai/", "_blank");
+            }, 500);
+        });
+    }
+
+    function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2500);
+    }
+</script>
+
+</body>
+</html>

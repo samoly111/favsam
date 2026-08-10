@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herramientas de Búsqueda y Enlaces</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            
+            /* CAMBIA 'TU_IMAGEN.jpg' POR EL ENLACE O RUTA DE TU IMAGEN */
+            background-image: url('fondo.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #f4f4f9; /* Fondo de respaldo */
+        }
+
+        .contenedor {
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            /* Fondo blanco con transparencia y desenfoque */
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        h3 {
+            color: #555;
+            font-size: 14px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: normal;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .btn-redirigir {
+            background-color: #28a745;
+        }
+        .btn-redirigir:hover {
+            background-color: #218838;
+        }
+        .btn-google {
+            background-color: #4285F4;
+        }
+        .btn-google:hover {
+            background-color: #357ae8;
+        }
+        .btn-index {
+            background-color: #e91e63;
+        }
+        .btn-index:hover {
+            background-color: #c2185b;
+        }
+        .opciones {
+            margin: 5px 0 12px 0;
+            font-size: 14px;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+        .opciones input {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        .opciones label {
+            cursor: pointer;
+        }
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ddd;
+            margin: 25px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+
+        <h2>DONLOADER</h2>
+        <h3>Descargas App de Android</h3>
+        <input type="text" id="codigo" placeholder="Ejemplo: 12345" onkeypress="evaluarEnterAftv(event)" autofocus>
+        
+        <div class="opciones">
+            <input type="checkbox" id="nuevaPestanaAftv" checked>
+            <label for="nuevaPestanaAftv">Abrir en una nueva pestaña</label>
+        </div>
+        <button class="btn-redirigir" onclick="generarYRedirigir()">Ir al Sitio Web ➔</button>
+
+
+        <hr> <h2>OK.RU</h2>
+        <h3>Buscar contenido dentro de OK.ru</h3>
+        <input type="text" id="busquedaOk" placeholder="¿Qué querés buscar en OK.ru?" onkeypress="evaluarEnterOk(event)">
+        
+        <div class="opciones">
+            <input type="checkbox" id="nuevaPestanaOk" checked>
+            <label for="nuevaPestanaOk">Abrir en una nueva pestaña</label>
+        </div>
+        <button class="btn-google" onclick="buscarEnOkRu()">Buscar con Google 🔍</button>
+
+
+        <hr> <h2>INDEX OF</h2>
+        <h3>Buscar directorios abiertos</h3>
+        <input type="text" id="busquedaIndex" placeholder="Ejemplo: pub, películas, mp3..." onkeypress="evaluarEnterIndex(event)">
+        
+        <div class="opciones">
+            <input type="checkbox" id="nuevaPestanaIndex" checked>
+            <label for="nuevaPestanaIndex">Abrir en una nueva pestaña</label>
+        </div>
+        <button class="btn-index" onclick="buscarIndex()">Buscar Index Of 📁</button>
+
+    </div>
+
+    <script>
+        // --- Funciones para la Sección 1 (AFTVNews) ---
+        function generarYRedirigir() {
+            const baseLink = "http://go.aftvnews.com/";
+            const dato = document.getElementById("codigo").value.trim();
+            
+            if (dato === "") {
+                alert("Por favor, ingresa un dato primero.");
+                return;
+            }
+            
+            const linkCompleto = baseLink + dato;
+            const abrirEnNuevaPestana = document.getElementById("nuevaPestanaAftv").checked;
+            
+            document.getElementById("codigo").value = "";
+            
+            if (abrirEnNuevaPestana) {
+                window.open(linkCompleto, '_blank');
+            } else {
+                window.location.href = linkCompleto;
+            }
+        }
+
+        function evaluarEnterAftv(event) {
+            if (event.key === "Enter") {
+                generarYRedirigir();
+            }
+        }
+
+        // --- Funciones para la Sección 2 (Google en OK.ru) ---
+        function buscarEnOkRu() {
+            const terminoBuscado = document.getElementById("busquedaOk").value.trim();
+            
+            if (terminoBuscado === "") {
+                alert("Por favor, ingresa un término de búsqueda.");
+                return;
+            }
+            
+            const linkGoogle = "https://www.google.com/search?q=" + encodeURIComponent(terminoBuscado) + "+site%3Aok.ru";
+            const abrirEnNuevaPestana = document.getElementById("nuevaPestanaOk").checked;
+            
+            document.getElementById("busquedaOk").value = "";
+            
+            if (abrirEnNuevaPestana) {
+                window.open(linkGoogle, '_blank');
+            } else {
+                window.location.href = linkGoogle;
+            }
+        }
+
+        function evaluarEnterOk(event) {
+            if (event.key === "Enter") {
+                buscarEnOkRu();
+            }
+        }
+
+        // --- Funciones para la Sección 3 (Index of /...) ---
+        function buscarIndex() {
+            const palabraReemplazo = document.getElementById("busquedaIndex").value.trim();
+            
+            if (palabraReemplazo === "") {
+                alert("Por favor, ingresa el término para el Index Of.");
+                return;
+            }
+            
+            const linkIndex = "https://www.google.com/search?q=" + encodeURIComponent("Index of /" + palabraReemplazo);
+            const abrirEnNuevaPestana = document.getElementById("nuevaPestanaIndex").checked;
+            
+            document.getElementById("busquedaIndex").value = "";
+            
+            if (abrirEnNuevaPestana) {
+                window.open(linkIndex, '_blank');
+            } else {
+                window.location.href = linkIndex;
+            }
+        }
+
+        function evaluarEnterIndex(event) {
+            if (event.key === "Enter") {
+                buscarIndex();
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Favoritos</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --card-bg: #18181b;
+      --card-hover: #27272a;
+      --text: #f4f4f5;
+      --accent: #f97316;
+      --accent-glow: rgba(249, 115, 22, 0.2);
+      --muted: #a1a1aa;
+      --border: #27272a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 900px 500px at 15% -10%, rgba(249, 115, 22, 0.16), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 100% 15%, rgba(249, 115, 22, 0.08), transparent 55%),
+        radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: auto, auto, 26px 26px;
+      background-position: 0 0, 0 0, 0 0;
+      background-repeat: no-repeat, no-repeat, repeat;
+      background-attachment: fixed, fixed, fixed;
+      color: var(--text);
+      padding: 2.5rem 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.2rem;
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .search-container {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .search-box {
+      flex: 1;
+      padding: 0.9rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background-color: var(--card-bg);
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-box:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .btn-toggle-form {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-radius: 10px;
+      width: 50px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-toggle-form:hover {
+      background-color: var(--card-hover);
+      border-color: var(--accent);
+    }
+
+    .add-form {
+      max-width: 500px;
+      margin: 1rem auto 2rem auto;
+      background-color: var(--card-bg);
+      padding: 1.2rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .add-form input {
+      padding: 0.7rem 1rem;
+      font-size: 0.95rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background-color: var(--bg);
+      color: var(--text);
+      outline: none;
+    }
+
+    .add-form input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-submit {
+      background-color: var(--accent);
+      color: #000;
+      font-weight: 600;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-submit:hover {
+      opacity: 0.9;
+    }
+
+    .top-section {
+      max-width: 900px;
+      margin: 3rem auto 0 auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .top-section.hidden {
+      display: none !important;
+    }
+
+    .top-section-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 0.7rem;
+      font-weight: 600;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .top-card {
+      position: relative;
+      background-color: var(--card-bg);
+      padding: 0.9rem 1.1rem;
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--accent);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-card:hover {
+      transform: translateY(-2px);
+      background-color: var(--card-hover);
+      box-shadow: 0 4px 20px -5px var(--accent-glow);
+    }
+
+    .top-card .visit-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background-color: var(--accent);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 0.15rem 0.5rem;
+      line-height: 1.3;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      padding: 1.1rem;
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      background-color: var(--card-hover);
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px -5px var(--accent-glow);
+    }
+
+    .card-title {
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      font-size: 1rem;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .no-results {
+      text-align: center;
+      color: var(--muted);
+      margin-top: 3rem;
+      font-size: 1rem;
+    }
+
+    .quick-bar {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.7rem;
+      padding: 0.6rem;
+      background-color: rgba(24, 24, 27, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      z-index: 100;
+    }
+
+    .quick-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .quick-btn:hover {
+      transform: translateY(-3px);
+    }
+
+    .quick-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .quick-btn.youtube { background-color: #FF0000; }
+    .quick-btn.facebook { background-color: #1877F2; }
+    .quick-btn.gemini { background: linear-gradient(135deg, #4285F4, #9B72CB, #D96570); }
+    .quick-btn.claude { background-color: #16A34A; }
+    .quick-btn.gmail { background-color: #ffffff; }
+
+    body {
+      padding-bottom: 6.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Mis <span>Favoritos</span></h1>
+    <div class="search-container">
+      <input type="text" id="searchInput" class="search-box" placeholder="Escribí para buscar..." autofocus>
+      <button id="toggleFormBtn" class="btn-toggle-form" title="Agregar nuevo enlace">+</button>
+    </div>
+
+    <form id="addBookmarkForm" class="add-form hidden">
+      <input type="text" id="newName" placeholder="Nombre (ej: Wikipedia)" required>
+      <input type="url" id="newUrl" placeholder="URL (ej: https://wikipedia.org)" required>
+      <input type="text" id="newDesc" placeholder="Descripción (ej: Enciclopedia libre)">
+      <button type="submit" id="submitBtn" class="btn-submit">Guardar enlace en la nube</button>
+    </form>
+  </header>
+
+  <main>
+    <div id="bookmarksGrid" class="grid"></div>
+  </main>
+
+  <div id="noResults" class="no-results hidden">No se encontraron marcadores</div>
+
+  <footer>
+    <section id="topSection" class="top-section hidden">
+      <div class="top-section-title">⭐ Más visitados</div>
+      <div id="topGrid" class="top-grid"></div>
+    </section>
+  </footer>
+
+  <script>
+    // Configuración de la Base de Datos
+    const BIN_ID = '6a6f283bda38895dfeaf60f5'; 
+    const API_KEY = '$2a$10$S/msJDsPfXYjPkKXZskfkeenTv.1sqwfB8itvUz.LRCSPyhXr7o.W'; 
+    const CACHE_KEY = 'favs_cache_data';
+    const CACHE_TIME_KEY = 'favs_cache_timestamp';
+    const CACHE_EXPIRE_TIME = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+    const VISITS_KEY = 'favs_visit_counts';
+    const TOP_COUNT = 4;
+
+    let marcadores = [];
+
+    const grid = document.getElementById('bookmarksGrid');
+    const searchInput = document.getElementById('searchInput');
+    const noResults = document.getElementById('noResults');
+    const toggleFormBtn = document.getElementById('toggleFormBtn');
+    const addBookmarkForm = document.getElementById('addBookmarkForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const topSection = document.getElementById('topSection');
+    const topGrid = document.getElementById('topGrid');
+
+    // --- Contador de visitas (guardado localmente en el navegador) ---
+    function getVisitCounts() {
+      try {
+        return JSON.parse(localStorage.getItem(VISITS_KEY)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function registerVisit(url) {
+      const counts = getVisitCounts();
+      counts[url] = (counts[url] || 0) + 1;
+      localStorage.setItem(VISITS_KEY, JSON.stringify(counts));
+    }
+
+    function renderTopVisited() {
+      const counts = getVisitCounts();
+
+      const topLinks = marcadores
+        .map(link => ({ ...link, visits: counts[link.url] || 0 }))
+        .filter(link => link.visits > 0)
+        .sort((a, b) => b.visits - a.visits)
+        .slice(0, TOP_COUNT);
+
+      topGrid.innerHTML = '';
+
+      if (topLinks.length === 0) {
+        topSection.classList.add('hidden');
+        return;
+      }
+
+      topLinks.forEach(link => {
+        const a = document.createElement('a');
+        a.className = 'top-card';
+        a.href = link.url;
+        a.rel = 'noopener noreferrer';
+        a.addEventListener('click', () => registerVisit(link.url));
+
+        a.innerHTML = `
+          <span class="visit-badge">${link.visits}</span>
+          <span class="card-title">${link.nombre}</span>
+          <span class="card-desc">${link.desc || ''}</span>
+        `;
+
+        topGrid.appendChild(a);
+      });
+
+      topSection.classList.remove('hidden');
+    }
+
+    // Cargar marcadores con caché inteligente
+    async function loadBookmarks() {
+      const cachedData = localStorage.getItem(CACHE_KEY);
+      const cachedTimestamp = localStorage.getItem(CACHE_TIME_KEY);
+      const now = Date.now();
+
+      // Si existe caché y no venció las 24 horas, usarlo
+      if (cachedData && cachedTimestamp && (now - cachedTimestamp < CACHE_EXPIRE_TIME)) {
+        marcadores = JSON.parse(cachedData);
+        renderBookmarks();
+        return;
+      }
+
+      // De lo contrario, pedir datos a JSONBin.io
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        const data = await res.json();
+        marcadores = data.record;
+
+        // Guardar la respuesta fresca en el almacenamiento local
+        localStorage.setItem(CACHE_KEY, JSON.stringify(marcadores));
+        localStorage.setItem(CACHE_TIME_KEY, now.toString());
+
+        renderBookmarks();
+      } catch (err) {
+        console.error("Error al cargar marcadores:", err);
+        // Si falla la red, intentar usar el caché viejo si existe
+        if (cachedData) {
+          marcadores = JSON.parse(cachedData);
+          renderBookmarks();
+        }
+      }
+    }
+
+    function renderBookmarks() {
+      grid.innerHTML = '';
+
+      marcadores.forEach(link => {
+        const a = document.createElement('a');
+        a.className = 'card hidden';
+        a.href = link.url;
+        a.rel = 'noopener noreferrer';
+        a.addEventListener('click', () => {
+          registerVisit(link.url);
+          renderTopVisited();
+        });
+
+        a.innerHTML = `
+          <span class="card-title">${link.nombre}</span>
+          <span class="card-desc">${link.desc || ''}</span>
+        `;
+
+        grid.appendChild(a);
+      });
+
+      renderTopVisited();
+    }
+
+    function filterBookmarks() {
+      const term = searchInput.value.toLowerCase().trim();
+      let totalVisible = 0;
+      const cards = grid.querySelectorAll('.card');
+
+      if (term === '') {
+        cards.forEach(card => card.classList.add('hidden'));
+        noResults.classList.add('hidden');
+        return;
+      }
+
+      cards.forEach(card => {
+        const titleText = card.querySelector('.card-title').textContent.toLowerCase();
+        const descText = card.querySelector('.card-desc').textContent.toLowerCase();
+
+        if (titleText.includes(term) || descText.includes(term)) {
+          card.classList.remove('hidden');
+          totalVisible++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      if (totalVisible === 0) {
+        noResults.classList.remove('hidden');
+      } else {
+        noResults.classList.add('hidden');
+      }
+    }
+
+    searchInput.addEventListener('input', filterBookmarks);
+
+    toggleFormBtn.addEventListener('click', () => {
+      addBookmarkForm.classList.toggle('hidden');
+    });
+
+    addBookmarkForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Guardando...';
+
+      const newBookmark = {
+        nombre: document.getElementById('newName').value.trim(),
+        url: document.getElementById('newUrl').value.trim(),
+        desc: document.getElementById('newDesc').value.trim()
+      };
+
+      marcadores.push(newBookmark);
+
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+          },
+          body: JSON.stringify(marcadores)
+        });
+
+        // Actualizar el caché inmediatamente con el nuevo item agregado
+        localStorage.setItem(CACHE_KEY, JSON.stringify(marcadores));
+        localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+
+        addBookmarkForm.reset();
+        addBookmarkForm.classList.add('hidden');
+        renderBookmarks();
+
+        searchInput.value = newBookmark.nombre;
+        filterBookmarks();
+      } catch (err) {
+        alert("Ocurrió un error al guardar en la nube.");
+        console.error(err);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Guardar enlace en la nube';
+      }
+    });
+
+    loadBookmarks();
+  </script>
+
+  <nav class="quick-bar">
+    <a class="quick-btn youtube" href="https://www.youtube.com" rel="noopener noreferrer" title="YouTube">
+      <svg viewBox="0 0 24 24" fill="white"><path d="M9.5 15.5V8.5L16 12L9.5 15.5Z"/></svg>
+    </a>
+    <a class="quick-btn facebook" href="https://www.facebook.com" rel="noopener noreferrer" title="Facebook">
+      <svg viewBox="0 0 24 24" fill="white"><path d="M15 8h2V5h-2c-2.2 0-4 1.8-4 4v2H9v3h2v7h3v-7h2.5l.5-3H14V9c0-.6.4-1 1-1z"/></svg>
+    </a>
+    <a class="quick-btn gemini" href="https://gemini.google.com" rel="noopener noreferrer" title="Gemini">
+      <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C12 8 8 12 2 12C8 12 12 16 12 22C12 16 16 12 22 12C16 12 12 8 12 2Z"/></svg>
+    </a>
+    <a class="quick-btn claude" href="https://claude.ai" rel="noopener noreferrer" title="Claude">
+      <span style="color:white; font-size:22px; font-weight:700;">A</span>
+    </a>
+    <a class="quick-btn gmail" href="https://mail.google.com" rel="noopener noreferrer" title="Gmail">
+      <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M2 6.5C2 5.12 3.12 4 4.5 4h15C20.88 4 22 5.12 22 6.5v11c0 1.38-1.12 2.5-2.5 2.5h-15C3.12 20 2 18.88 2 17.5v-11z"/><path fill="#fff" d="M4.5 6l7.5 6 7.5-6"/><path fill="none" stroke="#fff" stroke-width="1.4" d="M4 6.6l8 6.2 8-6.2"/></svg>
+    </a>
+  </nav>
+
+</body>
+</html>

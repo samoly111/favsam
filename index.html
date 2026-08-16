@@ -303,6 +303,7 @@
     <h1>Mis <span>Favoritos</span></h1>
     <div class="search-container">
       <input type="text" id="searchInput" class="search-box" placeholder="Escribí para buscar..." autofocus>
+      <button id="refreshBtn" class="btn-toggle-form" title="Actualizar datos guardados">⟳</button>
       <button id="toggleFormBtn" class="btn-toggle-form" title="Agregar nuevo enlace">+</button>
     </div>
 
@@ -335,7 +336,7 @@
     const CACHE_TIME_KEY = 'favs_cache_timestamp';
     const CACHE_EXPIRE_TIME = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
     const VISITS_KEY = 'favs_visit_counts';
-    const TOP_COUNT = 4;
+    const TOP_COUNT = 24;
 
     let marcadores = [];
 
@@ -343,10 +344,22 @@
     const searchInput = document.getElementById('searchInput');
     const noResults = document.getElementById('noResults');
     const toggleFormBtn = document.getElementById('toggleFormBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
     const addBookmarkForm = document.getElementById('addBookmarkForm');
     const submitBtn = document.getElementById('submitBtn');
     const topSection = document.getElementById('topSection');
     const topGrid = document.getElementById('topGrid');
+
+    // Forzar actualización: borra el caché local y vuelve a pedir los datos a la nube
+    async function forceRefresh() {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = '…';
+      localStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem(CACHE_TIME_KEY);
+      await loadBookmarks();
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = '⟳';
+    }
 
     // --- Contador de visitas (guardado localmente en el navegador) ---
     function getVisitCounts() {
@@ -490,8 +503,9 @@
 
     searchInput.addEventListener('input', filterBookmarks);
 
-    toggleFormBtn.addEventListener('click', () => {
-      addBookmarkForm.classList.toggle('hidden');
+    refreshBtn.addEventListener('click', forceRefresh);
+
+    toggleFormBtn.addEventListener('click', () => {      addBookmarkForm.classList.toggle('hidden');
     });
 
     addBookmarkForm.addEventListener('submit', async (e) => {

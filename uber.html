@@ -366,6 +366,8 @@ function render(){
   const totalCombustible = entries.reduce((s,e)=> s + e.combustible, 0);
   const totalPeajes = entries.reduce((s,e)=> s + (e.peajes||0), 0);
   const porKm = totalKm > 0 ? totalNeta/totalKm : 0;
+  const totalGastos = totalCombustible + totalPeajes;
+  const porcentajeGastos = totalRecaudado > 0 ? (totalGastos/totalRecaudado)*100 : 0;
 
   const summary = document.getElementById('summary');
   summary.innerHTML = `
@@ -393,6 +395,10 @@ function render(){
     <div class="summary-card">
       <p class="summary-label">Ganancia por km</p>
       <p class="summary-value">${fmt(porKm)}</p>
+    </div>
+    <div class="summary-card">
+      <p class="summary-label">% gastos s/ recaudado</p>
+      <p class="summary-value">${porcentajeGastos.toFixed(1)}%</p>
     </div>
   `;
 

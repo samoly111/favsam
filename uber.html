@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Ganancias - Uber</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --card:#181b21;
+    --card2:#1f232b;
+    --border:#2a2e37;
+    --text:#f3f4f6;
+    --text-sec:#9ca3af;
+    --text-muted:#6b7280;
+    --accent:#22c55e;
+    --accent-dark:#15803d;
+    --danger:#ef4444;
+    --blue:#3b82f6;
+    --amber:#f59e0b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-bottom:40px;
+  }
+  header{
+    padding:20px 16px 14px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    background:var(--bg);
+    z-index:10;
+  }
+  header h1{
+    font-size:19px;
+    margin:0;
+    font-weight:600;
+  }
+  header p{
+    margin:4px 0 0;
+    font-size:12.5px;
+    color:var(--text-sec);
+  }
+  .container{
+    max-width:480px;
+    margin:0 auto;
+    padding:16px;
+  }
+  .summary-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .summary-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px;
+  }
+  .summary-card.full{
+    grid-column:1 / -1;
+    background:linear-gradient(135deg,#14532d,#166534);
+    border-color:#166534;
+  }
+  .summary-label{
+    font-size:11.5px;
+    color:var(--text-sec);
+    margin:0 0 4px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .summary-card.full .summary-label{color:#bbf7d0;}
+  .summary-value{
+    font-size:21px;
+    font-weight:700;
+    margin:0;
+  }
+  .summary-card.full .summary-value{font-size:28px;}
+  .summary-sub{
+    font-size:11.5px;
+    color:var(--text-muted);
+    margin-top:2px;
+  }
+  .summary-card.full .summary-sub{color:#dcfce7;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:15px;
+    margin:0 0 12px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .field{
+    margin-bottom:12px;
+  }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    color:var(--text-sec);
+    margin-bottom:5px;
+  }
+  .field input{
+    width:100%;
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:11px 12px;
+    color:var(--text);
+    font-size:15px;
+    font-family:inherit;
+  }
+  .field input:focus{
+    outline:none;
+    border-color:var(--accent);
+  }
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .row3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
+  }
+  .preview{
+    background:var(--card2);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:13px;
+    color:var(--text-sec);
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .preview strong{color:var(--text);}
+  button{
+    width:100%;
+    background:var(--accent);
+    color:#052e16;
+    border:none;
+    border-radius:10px;
+    padding:13px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  button:active{transform:scale(0.98);}
+  .error{
+    color:var(--danger);
+    font-size:12.5px;
+    margin-top:-6px;
+    margin-bottom:10px;
+    display:none;
+  }
+  .entries{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .entry{
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+  }
+  .entry-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+  }
+  .entry-date{
+    font-size:13.5px;
+    font-weight:600;
+  }
+  .entry-net{
+    font-size:15px;
+    font-weight:700;
+    color:var(--accent);
+  }
+  .entry-detail{
+    font-size:12px;
+    color:var(--text-sec);
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 14px;
+  }
+  .entry-detail span b{color:var(--text);font-weight:500;}
+  .del-btn{
+    width:auto;
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--danger);
+    padding:5px 10px;
+    font-size:11.5px;
+    font-weight:500;
+    border-radius:8px;
+    margin-top:8px;
+  }
+  .empty{
+    text-align:center;
+    color:var(--text-muted);
+    font-size:13.5px;
+    padding:24px 0;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:6px;
+    background:rgba(59,130,246,0.15);
+    color:#93c5fd;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Control de ganancias</h1>
+  <p>Uber - combustible, km y recaudación</p>
+</header>
+
+<div class="container">
+
+  <div class="summary-grid" id="summary"></div>
+
+  <div class="card">
+    <h2>Nuevo turno / día</h2>
+
+    <div class="field">
+      <label for="fecha">Fecha</label>
+      <input type="date" id="fecha">
+    </div>
+
+    <div class="field">
+      <label for="km">Kilómetros recorridos</label>
+      <input type="number" id="km" inputmode="decimal" placeholder="0" min="0" step="0.1">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="combustible">Combustible ($)</label>
+        <input type="number" id="combustible" inputmode="decimal" placeholder="0" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="peajes">Peajes ($)</label>
+        <input type="number" id="peajes" inputmode="decimal" placeholder="0" min="0" step="1">
+      </div>
+    </div>
+
+    <div class="row3">
+      <div class="field">
+        <label for="efectivo">Efectivo ($)</label>
+        <input type="number" id="efectivo" inputmode="decimal" placeholder="0" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="transferencia">Transferencia ($)</label>
+        <input type="number" id="transferencia" inputmode="decimal" placeholder="0" min="0" step="1">
+      </div>
+      <div class="field">
+        <label for="tarjeta">Tarjeta ($)</label>
+        <input type="number" id="tarjeta" inputmode="decimal" placeholder="0" min="0" step="1">
+      </div>
+    </div>
+
+    <div class="preview">
+      <span>Recaudado total</span>
+      <strong id="preview-recaudado">$0</strong>
+    </div>
+    <div class="preview">
+      <span>Ganancia neta (recaudado - combustible - peajes)</span>
+      <strong id="preview-neta">$0</strong>
+    </div>
+
+    <p class="error" id="error-msg">Cargá al menos un valor antes de guardar.</p>
+
+    <button id="guardar-btn">Guardar registro</button>
+  </div>
+
+  <div class="card">
+    <h2>Historial</h2>
+    <div class="entries" id="entries-list"></div>
+  </div>
+
+</div>
+
+<script>
+let entries = [];
+const STORAGE_KEY = 'uber-earnings-entries';
+
+function fmt(n){
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+
+function todayISO(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function getInputs(){
+  return {
+    fecha: document.getElementById('fecha').value || todayISO(),
+    km: parseFloat(document.getElementById('km').value) || 0,
+    combustible: parseFloat(document.getElementById('combustible').value) || 0,
+    peajes: parseFloat(document.getElementById('peajes').value) || 0,
+    efectivo: parseFloat(document.getElementById('efectivo').value) || 0,
+    transferencia: parseFloat(document.getElementById('transferencia').value) || 0,
+    tarjeta: parseFloat(document.getElementById('tarjeta').value) || 0,
+  };
+}
+
+function updatePreview(){
+  const v = getInputs();
+  const recaudado = v.efectivo + v.transferencia + v.tarjeta;
+  const neta = recaudado - v.combustible - v.peajes;
+  document.getElementById('preview-recaudado').textContent = fmt(recaudado);
+  document.getElementById('preview-neta').textContent = fmt(neta);
+}
+
+['km','combustible','peajes','efectivo','transferencia','tarjeta'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updatePreview);
+});
+
+async function loadEntries(){
+  try{
+    const res = await window.storage.get('entries', false);
+    entries = res && res.value ? JSON.parse(res.value) : [];
+  }catch(e){
+    entries = [];
+  }
+  render();
+}
+
+async function saveEntries(){
+  try{
+    await window.storage.set('entries', JSON.stringify(entries), false);
+  }catch(e){
+    console.error('No se pudo guardar', e);
+  }
+}
+
+function render(){
+  // resumen
+  const totalNeta = entries.reduce((s,e)=> s + (e.efectivo+e.transferencia+e.tarjeta-e.combustible-(e.peajes||0)), 0);
+  const totalRecaudado = entries.reduce((s,e)=> s + (e.efectivo+e.transferencia+e.tarjeta), 0);
+  const totalKm = entries.reduce((s,e)=> s + e.km, 0);
+  const totalCombustible = entries.reduce((s,e)=> s + e.combustible, 0);
+  const totalPeajes = entries.reduce((s,e)=> s + (e.peajes||0), 0);
+  const porKm = totalKm > 0 ? totalNeta/totalKm : 0;
+
+  const summary = document.getElementById('summary');
+  summary.innerHTML = `
+    <div class="summary-card full">
+      <p class="summary-label">Ganancia neta total</p>
+      <p class="summary-value">${fmt(totalNeta)}</p>
+      <p class="summary-sub">${entries.length} registro${entries.length===1?'':'s'}</p>
+    </div>
+    <div class="summary-card">
+      <p class="summary-label">Recaudado</p>
+      <p class="summary-value">${fmt(totalRecaudado)}</p>
+    </div>
+    <div class="summary-card">
+      <p class="summary-label">Combustible</p>
+      <p class="summary-value">${fmt(totalCombustible)}</p>
+    </div>
+    <div class="summary-card">
+      <p class="summary-label">Peajes</p>
+      <p class="summary-value">${fmt(totalPeajes)}</p>
+    </div>
+    <div class="summary-card">
+      <p class="summary-label">Km recorridos</p>
+      <p class="summary-value">${Math.round(totalKm).toLocaleString('es-AR')}</p>
+    </div>
+    <div class="summary-card">
+      <p class="summary-label">Ganancia por km</p>
+      <p class="summary-value">${fmt(porKm)}</p>
+    </div>
+  `;
+
+  // historial
+  const list = document.getElementById('entries-list');
+  if(entries.length === 0){
+    list.innerHTML = '<p class="empty">Todavía no cargaste ningún registro.</p>';
+    return;
+  }
+  const sorted = [...entries].sort((a,b)=> b.fecha.localeCompare(a.fecha) || b.id - a.id);
+  list.innerHTML = sorted.map(e=>{
+    const recaudado = e.efectivo + e.transferencia + e.tarjeta;
+    const neta = recaudado - e.combustible - (e.peajes||0);
+    const [y,m,d] = e.fecha.split('-');
+    return `
+      <div class="entry">
+        <div class="entry-top">
+          <span class="entry-date">${d}/${m}/${y}</span>
+          <span class="entry-net">${fmt(neta)}</span>
+        </div>
+        <div class="entry-detail">
+          <span><i></i>Km: <b>${e.km}</b></span>
+          <span>Combustible: <b>${fmt(e.combustible)}</b></span>
+          <span>Peajes: <b>${fmt(e.peajes||0)}</b></span>
+          <span>Efectivo: <b>${fmt(e.efectivo)}</b></span>
+          <span>Transferencia: <b>${fmt(e.transferencia)}</b></span>
+          <span>Tarjeta: <b>${fmt(e.tarjeta)}</b></span>
+        </div>
+        <button class="del-btn" onclick="deleteEntry(${e.id})">Eliminar</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function deleteEntry(id){
+  entries = entries.filter(e=> e.id !== id);
+  await saveEntries();
+  render();
+}
+
+document.getElementById('guardar-btn').addEventListener('click', async ()=>{
+  const v = getInputs();
+  const errorMsg = document.getElementById('error-msg');
+  if(v.km === 0 && v.combustible === 0 && v.peajes === 0 && v.efectivo === 0 && v.transferencia === 0 && v.tarjeta === 0){
+    errorMsg.style.display = 'block';
+    return;
+  }
+  errorMsg.style.display = 'none';
+
+  entries.push({
+    id: Date.now(),
+    fecha: v.fecha,
+    km: v.km,
+    combustible: v.combustible,
+    peajes: v.peajes,
+    efectivo: v.efectivo,
+    transferencia: v.transferencia,
+    tarjeta: v.tarjeta
+  });
+  await saveEntries();
+
+  // limpiar campos (menos fecha)
+  ['km','combustible','peajes','efectivo','transferencia','tarjeta'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+  updatePreview();
+  render();
+});
+
+document.getElementById('fecha').value = todayISO();
+loadEntries();
+updatePreview();
+</script>
+
+</body>
+</html>

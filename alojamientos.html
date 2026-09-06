@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listado de Alojamientos</title>
+<style>
+  :root {
+    --naranja: #ff8c00;
+    --naranja-oscuro: #cc6f00;
+    --negro: #0d0d0d;
+    --negro-suave: #1a1a1a;
+    --gris: #2b2b2b;
+    --texto-claro: #f5f5f5;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 20px;
+    background: var(--negro);
+    color: var(--texto-claro);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+  }
+
+  .contenedor {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    color: var(--naranja);
+    letter-spacing: 1px;
+    font-size: 2rem;
+    margin-bottom: 4px;
+    text-shadow: 0 0 12px rgba(255,140,0,0.4);
+  }
+
+  .subtitulo {
+    text-align: center;
+    color: #bbb;
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  .buscador {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 25px auto;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 2px solid var(--naranja-oscuro);
+    background: var(--negro-suave);
+    color: var(--texto-claro);
+    font-size: 1rem;
+  }
+  .buscador:focus {
+    outline: none;
+    border-color: var(--naranja);
+    box-shadow: 0 0 8px rgba(255,140,0,0.5);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--negro-suave);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(255,140,0,0.15);
+  }
+
+  thead {
+    background: var(--naranja);
+    color: var(--negro);
+  }
+
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--gris);
+  }
+
+  th {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+  }
+
+  tbody tr:hover {
+    background: rgba(255,140,0,0.12);
+  }
+
+  tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.03);
+  }
+
+  td.telefono {
+    color: #ffb84d;
+    white-space: nowrap;
+  }
+
+  .estado {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .estado.ocupado {
+    background: #4d1a1a;
+    color: #ff6b6b;
+    border: 1px solid #ff6b6b;
+  }
+
+  .estado.precio {
+    background: rgba(255,140,0,0.15);
+    color: var(--naranja);
+    border: 1px solid var(--naranja);
+  }
+
+  .estado.info {
+    background: rgba(255,255,255,0.08);
+    color: #ccc;
+    border: 1px solid #555;
+  }
+
+  .estado.vacio {
+    background: transparent;
+    color: #666;
+    border: 1px dashed #444;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 25px;
+    color: #666;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 600px) {
+    th, td { padding: 8px 10px; font-size: 0.85rem; }
+    h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="contenedor">
+    <h1>Listado de Alojamientos</h1>
+    <p class="subtitulo">Nombre, teléfono y estado / precio por noche</p>
+
+    <input type="text" class="buscador" id="buscador" placeholder="🔍 Buscar por nombre o teléfono...">
+
+    <table id="tabla">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Estado / Precio</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpo-tabla">
+        <!-- filas generadas dinámicamente -->
+      </tbody>
+    </table>
+
+    <footer>Total de alojamientos: <span id="total-count"></span></footer>
+  </div>
+
+<script>
+  const datos = [
+    ["Departamentos Marisa Morandi", "298 452-2620", null],
+    ["Departamentos Norma Torres", "298 455-8011", "OCUPADO"],
+    ["Alojamiento Graciela Pirri", "299 588-3907", 80000],
+    ["Departamento Escalante", "298 455-5741", "OCUPADO"],
+    ["Departamento Ema Román", "298 452-6830", "OCUPADO"],
+    ["Casa Palomo", "298 457-2503", "OCUPADO"],
+    ["Casa Miguel Enostroza", "298 455-0173", "OCUPADO"],
+    ["Complejo Punto y Aparte", "291 524-5857", "OCUPADO"],
+    ["Alquileres Oli", "298 457-5684", 65000],
+    ["Casa Daniela", "298 492-5966", 70000],
+    ["Benitez Marisol", "298452-3271", 70000],
+    ["Elosegui Damian", "298493-6069", null],
+    ["Gallardo Marcos", "298435-8476", 50000],
+    ["Lopez Adan", "299532-0187", 70000],
+    ["Foto Auto", "298458-4363", 60000],
+    ["Pignanelli Jorgelina", "298475-2574", "inmobiliaria / Llamar"],
+    ["Rapari Rady", "299580-7366", 100000],
+    ["Elizabeth Araya", "298428-9625", 70000],
+    ["Hospedaje Griffiths / Lamarque", "298428-8679", "OCUPADO"],
+    ["La Herencia / Lamarque", "298457-0364", 70000],
+    ["Cabañas conesa Gral Conesa", "292062-7062", 80000],
+    ["Apartamentos La Chacra", "292024-8249", null],
+    ["Apartamento equipados", "292040-6597", 75000]
+  ];
+
+  function renderEstado(valor) {
+    if (valor === null || valor === undefined) {
+      return '<span class="estado vacio">Sin datos</span>';
+    }
+    if (typeof valor === 'number') {
+      return '<span class="estado precio">$' + valor.toLocaleString('es-AR') + '</span>';
+    }
+    if (valor === 'OCUPADO') {
+      return '<span class="estado ocupado">OCUPADO</span>';
+    }
+    return '<span class="estado info">' + valor + '</span>';
+  }
+
+  function renderTabla(lista) {
+    const cuerpo = document.getElementById('cuerpo-tabla');
+    cuerpo.innerHTML = '';
+    lista.forEach(([nombre, telefono, estado]) => {
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
+        <td>${nombre}</td>
+        <td class="telefono">${telefono}</td>
+        <td>${renderEstado(estado)}</td>
+      `;
+      cuerpo.appendChild(fila);
+    });
+    document.getElementById('total-count').textContent = lista.length;
+  }
+
+  document.getElementById('buscador').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const filtrado = datos.filter(([nombre, telefono]) =>
+      nombre.toLowerCase().includes(q) || telefono.toLowerCase().includes(q)
+    );
+    renderTabla(filtrado);
+  });
+
+  renderTabla(datos);
+</script>
+</body>
+</html>

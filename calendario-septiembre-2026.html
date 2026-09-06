@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario — Septiembre 2026</title>
+<style>
+  :root {
+    --bg: #F5F3EE;
+    --ink: #24261F;
+    --ink-soft: #6B6A60;
+    --line: #DAD6C9;
+    --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 16px 64px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap { width: 100%; max-width: 620px; }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    font-size: 30px;
+    margin: 0 0 4px;
+    letter-spacing: 0.2px;
+  }
+  .sub {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin: 0 0 24px;
+  }
+  .palette {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  .palette-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-right: 4px;
+  }
+  .swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+  }
+  .swatch.selected {
+    border-color: var(--ink);
+  }
+  .swatch.eraser {
+    background: var(--card);
+    border: 2px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .swatch.eraser.selected {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .grid {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .weekdays, .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+  .weekdays div {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding: 10px 0 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .day {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    font-size: 15px;
+    user-select: none;
+  }
+  .day:nth-child(7n) { border-right: none; }
+  .day.empty { cursor: default; }
+  .day.today .num { font-weight: 700; }
+  .day .num {
+    position: relative;
+    z-index: 2;
+  }
+  .day .ring {
+    position: absolute;
+    width: 26%;
+    height: 74%;
+    border-radius: 999px;
+    z-index: 1;
+    top: 50%;
+    right: -13%;
+    transform: translateY(-50%);
+    display: none;
+  }
+  .day.marked .ring { display: block; }
+  .day:nth-child(7n) .ring { right: -9%; width: 18%; }
+  .footer-note {
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Septiembre 2026</h1>
+  <p class="sub">Elegí un color y tocá un día para marcar la noche hacia el día siguiente. Tocá de nuevo para borrar la marca.</p>
+
+  <div class="palette" id="palette">
+    <span class="palette-label">Color:</span>
+  </div>
+
+  <div class="grid">
+    <div class="weekdays">
+      <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+    </div>
+    <div class="days" id="days"></div>
+  </div>
+
+  <p class="footer-note" id="status"></p>
+</div>
+
+<script>
+(function() {
+  var YEAR = 2026, MONTH = 8; // setiembre = índice 8
+  var colors = [
+    { id: 'rojo', hex: '#D64545' },
+    { id: 'ambar', hex: '#E0A82E' },
+    { id: 'verde', hex: '#4C9F70' },
+    { id: 'azul', hex: '#3B6FA0' },
+    { id: 'violeta', hex: '#8B5FBF' }
+  ];
+  var selectedColor = colors[0].id;
+  var marks = {};
+  var storageKey = 'calendario-2026-09';
+
+  var paletteEl = document.getElementById('palette');
+  colors.forEach(function(c) {
+    var b = document.createElement('button');
+    b.className = 'swatch' + (c.id === selectedColor ? ' selected' : '');
+    b.style.background = c.hex;
+    b.setAttribute('aria-label', c.id);
+    b.dataset.color = c.id;
+    b.addEventListener('click', function() {
+      selectedColor = c.id;
+      document.querySelectorAll('.swatch').forEach(function(s) { s.classList.remove('selected'); });
+      b.classList.add('selected');
+    });
+    paletteEl.appendChild(b);
+  });
+  var eraser = document.createElement('button');
+  eraser.className = 'swatch eraser';
+  eraser.textContent = '✕';
+  eraser.addEventListener('click', function() {
+    selectedColor = null;
+    document.querySelectorAll('.swatch').forEach(function(s) { s.classList.remove('selected'); });
+    eraser.classList.add('selected');
+  });
+  paletteEl.appendChild(eraser);
+
+  function colorHex(id) {
+    for (var i = 0; i < colors.length; i++) if (colors[i].id === id) return colors[i].hex;
+    return null;
+  }
+
+  var daysEl = document.getElementById('days');
+  var firstOfMonth = new Date(YEAR, MONTH, 1);
+  var startOffset = (firstOfMonth.getDay() + 6) % 7; // lunes = 0
+  var daysInMonth = new Date(YEAR, MONTH + 1, 0).getDate();
+  var today = new Date();
+
+  function render() {
+    daysEl.innerHTML = '';
+    for (var i = 0; i < startOffset; i++) {
+      var empty = document.createElement('div');
+      empty.className = 'day empty';
+      daysEl.appendChild(empty);
+    }
+    for (var d = 1; d <= daysInMonth; d++) {
+      (function(day) {
+        var cell = document.createElement('div');
+        cell.className = 'day';
+        var isToday = today.getFullYear() === YEAR && today.getMonth() === MONTH && today.getDate() === day;
+        if (isToday) cell.classList.add('today');
+
+        var ring = document.createElement('div');
+        ring.className = 'ring';
+        var markColor = marks[day];
+        if (markColor) {
+          cell.classList.add('marked');
+          ring.style.background = colorHex(markColor);
+        }
+        var num = document.createElement('span');
+        num.className = 'num';
+        num.textContent = day;
+
+        cell.appendChild(ring);
+        cell.appendChild(num);
+        cell.addEventListener('click', function() {
+          if (selectedColor === null) {
+            delete marks[day];
+          } else if (marks[day] === selectedColor) {
+            delete marks[day];
+          } else {
+            marks[day] = selectedColor;
+          }
+          save();
+          render();
+        });
+        daysEl.appendChild(cell);
+      })(d);
+    }
+  }
+
+  function save() {
+    var statusEl = document.getElementById('status');
+    try {
+      window.storage.set(storageKey, JSON.stringify(marks), false).then(function(result) {
+        if (!result && statusEl) statusEl.textContent = 'No se pudo guardar. Los cambios son solo de esta sesión.';
+      }).catch(function() {
+        if (statusEl) statusEl.textContent = 'No se pudo guardar. Los cambios son solo de esta sesión.';
+      });
+    } catch (e) {
+      if (statusEl) statusEl.textContent = 'No se pudo guardar. Los cambios son solo de esta sesión.';
+    }
+  }
+
+  function load() {
+    try {
+      window.storage.get(storageKey, false).then(function(result) {
+        if (result && result.value) {
+          try { marks = JSON.parse(result.value) || {}; } catch (e) { marks = {}; }
+        }
+        render();
+      }).catch(function() { render(); });
+    } catch (e) {
+      render();
+    }
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

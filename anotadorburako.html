@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anotador de Burako</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .scoreboard {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 450px;
+        }
+        .teams {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .team {
+            text-align: center;
+            width: 45%;
+        }
+        .team input[type="text"] {
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            border: none;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+            background: transparent;
+            color: #34495e;
+        }
+        .team input[type="text"]:focus {
+            outline: none;
+            border-bottom: 2px solid #3498db;
+        }
+        .team-total {
+            font-size: 3em;
+            font-weight: bold;
+            color: #2980b9;
+            margin: 5px 0 15px 0;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .input-group {
+            width: 48%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-group label {
+            text-align: center;
+            font-weight: bold;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 4px;
+        }
+        .controls input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.1em;
+            text-align: center;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .controls input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            background-color: #27ae60;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #219150;
+        }
+        
+        /* Botones de acción secundaria */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-buttons button {
+            margin-top: 0;
+            padding: 10px;
+            font-size: 1em;
+        }
+        button.save { background-color: #3498db; }
+        button.save:hover { background-color: #2980b9; }
+        
+        button.load { background-color: #9b59b6; }
+        button.load:hover { background-color: #8e44ad; }
+
+        button.reset { background-color: #e74c3c; }
+        button.reset:hover { background-color: #c0392b; }
+        
+        table {
+            width: 100%;
+            margin-top: 25px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #e9ecef;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+        }
+        td {
+            font-size: 1.1em;
+        }
+        .round-detail {
+            font-size: 0.75em;
+            color: #7f8c8d;
+            display: block;
+            margin-top: 4px;
+        }
+        .negative {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Anotador de Burako</h1>
+
+    <div class="scoreboard">
+        <!-- Nombres y Totales -->
+        <div class="teams">
+            <div class="team">
+                <input type="text" id="name1" value="Nosotros">
+                <div class="team-total" id="total1">0</div>
+            </div>
+            <div class="team">
+                <input type="text" id="name2" value="Ellos">
+                <div class="team-total" id="total2">0</div>
+            </div>
+        </div>
+
+        <!-- Ingreso de puntos desglosado -->
+        <div class="controls">
+            <div class="input-group">
+                <label id="lbl-name1">Nosotros</label>
+                <input type="number" id="base1" placeholder="Puntos Base" onkeypress="handleEnter(event)">
+                <input type="number" id="fichas1" placeholder="Puntos Fichas" onkeypress="handleEnter(event)">
+            </div>
+            <div class="input-group">
+                <label id="lbl-name2">Ellos</label>
+                <input type="number" id="base2" placeholder="Puntos Base" onkeypress="handleEnter(event)">
+                <input type="number" id="fichas2" placeholder="Puntos Fichas" onkeypress="handleEnter(event)">
+            </div>
+        </div>
+
+        <button onclick="addScores()">Anotar Ronda</button>
+        
+        <!-- Tabla de historial -->
+        <table id="historyTable">
+            <thead>
+                <tr>
+                    <th>Ronda</th>
+                    <th id="thName1">Nosotros</th>
+                    <th id="thName2">Ellos</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody">
+                <!-- Las rondas se agregarán aquí -->
+            </tbody>
+        </table>
+        
+        <!-- Controles de guardado y reinicio -->
+        <div class="action-buttons">
+            <button class="save" onclick="saveGame()">💾 Guardar</button>
+            <button class="load" onclick="loadGame()">📂 Cargar</button>
+        </div>
+        
+        <button class="reset" onclick="resetGame()">🗑️ Reiniciar Partida</button>
+    </div>
+
+    <script>
+        let total1 = 0;
+        let total2 = 0;
+        let round = 1;
+
+        // Sincronizar nombres
+        document.getElementById('name1').addEventListener('input', updateNames);
+        document.getElementById('name2').addEventListener('input', updateNames);
+
+        function updateNames() {
+            const n1 = document.getElementById('name1').value || 'Equipo 1';
+            const n2 = document.getElementById('name2').value || 'Equipo 2';
+            
+            document.getElementById('thName1').innerText = n1;
+            document.getElementById('lbl-name1').innerText = n1;
+            document.getElementById('thName2').innerText = n2;
+            document.getElementById('lbl-name2').innerText = n2;
+        }
+
+        // Permitir usar la tecla Enter
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                addScores();
+            }
+        }
+
+        function addScores() {
+            const base1Input = document.getElementById('base1');
+            const fichas1Input = document.getElementById('fichas1');
+            const base2Input = document.getElementById('base2');
+            const fichas2Input = document.getElementById('fichas2');
+
+            const b1 = parseInt(base1Input.value) || 0;
+            const f1 = parseInt(fichas1Input.value) || 0;
+            const b2 = parseInt(base2Input.value) || 0;
+            const f2 = parseInt(fichas2Input.value) || 0;
+
+            if (base1Input.value === "" && fichas1Input.value === "" && 
+                base2Input.value === "" && fichas2Input.value === "") {
+                return; 
+            }
+
+            const p1 = b1 + f1;
+            const p2 = b2 + f2;
+
+            total1 += p1;
+            total2 += p2;
+
+            document.getElementById('total1').innerText = total1;
+            document.getElementById('total2').innerText = total2;
+
+            const tbody = document.getElementById('historyBody');
+            const row = document.createElement('tr');
+            
+            const classP1 = p1 < 0 ? 'negative' : '';
+            const classP2 = p2 < 0 ? 'negative' : '';
+
+            row.innerHTML = `
+                <td>${round}</td>
+                <td class="${classP1}">
+                    <strong>${p1}</strong>
+                    <span class="round-detail">(B: ${b1} | F: ${f1})</span>
+                </td>
+                <td class="${classP2}">
+                    <strong>${p2}</strong>
+                    <span class="round-detail">(B: ${b2} | F: ${f2})</span>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+
+            base1Input.value = '';
+            fichas1Input.value = '';
+            base2Input.value = '';
+            fichas2Input.value = '';
+            
+            base1Input.focus();
+            round++;
+        }
+
+        // --- NUEVAS FUNCIONES DE GUARDADO --- //
+
+        function saveGame() {
+            const gameState = {
+                name1: document.getElementById('name1').value,
+                name2: document.getElementById('name2').value,
+                total1: total1,
+                total2: total2,
+                round: round,
+                history: document.getElementById('historyBody').innerHTML
+            };
+            
+            localStorage.setItem('burakoSaveData', JSON.stringify(gameState));
+            alert('💾 ¡Partida guardada exitosamente!');
+        }
+
+        function loadGame() {
+            const savedData = localStorage.getItem('burakoSaveData');
+            
+            if (savedData) {
+                if(confirm('¿Deseas cargar la partida guardada? Se reemplazará la partida actual.')) {
+                    const gameState = JSON.parse(savedData);
+                    
+                    // Restaurar variables lógicas
+                    total1 = gameState.total1;
+                    total2 = gameState.total2;
+                    round = gameState.round;
+                    
+                    // Restaurar nombres en los inputs
+                    document.getElementById('name1').value = gameState.name1;
+                    document.getElementById('name2').value = gameState.name2;
+                    updateNames(); // Sincroniza los nombres en la tabla y etiquetas
+                    
+                    // Restaurar totales visuales
+                    document.getElementById('total1').innerText = total1;
+                    document.getElementById('total2').innerText = total2;
+                    
+                    // Restaurar el historial de la tabla
+                    document.getElementById('historyBody').innerHTML = gameState.history;
+                }
+            } else {
+                alert('No hay ninguna partida guardada en este dispositivo.');
+            }
+        }
+
+        function resetGame() {
+            if(confirm("¿Estás seguro de que deseas reiniciar la partida? Los puntajes volverán a cero.")) {
+                total1 = 0;
+                total2 = 0;
+                round = 1;
+                document.getElementById('total1').innerText = total1;
+                document.getElementById('total2').innerText = total2;
+                document.getElementById('historyBody').innerHTML = '';
+                
+                // Opcional: preguntar si también se quiere borrar el guardado
+                if(localStorage.getItem('burakoSaveData') && confirm("¿Deseas borrar también la partida que tenías guardada?")) {
+                    localStorage.removeItem('burakoSaveData');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

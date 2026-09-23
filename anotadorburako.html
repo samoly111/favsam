@@ -7,26 +7,29 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            background-color: #121212;
             margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #333;
+            color: #e0e0e0;
         }
         h1 {
-            color: #2c3e50;
+            color: #ff7900;
             margin-bottom: 20px;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .scoreboard {
-            background: white;
+            background: #1e1e1e;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
             width: 100%;
             max-width: 450px;
+            border: 1px solid #333;
         }
         .teams {
             display: flex;
@@ -43,20 +46,20 @@
             text-align: center;
             width: 100%;
             border: none;
-            border-bottom: 2px solid #ddd;
+            border-bottom: 2px solid #444;
             padding-bottom: 5px;
             margin-bottom: 5px;
             background: transparent;
-            color: #34495e;
+            color: #ff9500;
         }
         .team input[type="text"]:focus {
             outline: none;
-            border-bottom: 2px solid #3498db;
+            border-bottom: 2px solid #ff7900;
         }
         .team-total {
             font-size: 3em;
             font-weight: bold;
-            color: #2980b9;
+            color: #ff7900;
             margin: 5px 0 15px 0;
         }
         
@@ -64,10 +67,10 @@
             display: flex;
             justify-content: space-between;
             gap: 15px;
-            background-color: #f8f9fa;
+            background-color: #2a2a2a;
             padding: 15px;
             border-radius: 8px;
-            border: 1px solid #e9ecef;
+            border: 1px solid #3a3a3a;
         }
         .input-group {
             width: 48%;
@@ -78,7 +81,7 @@
         .input-group label {
             text-align: center;
             font-weight: bold;
-            color: #7f8c8d;
+            color: #bbb;
             font-size: 0.9em;
             margin-bottom: 4px;
         }
@@ -87,13 +90,15 @@
             padding: 10px;
             font-size: 1.1em;
             text-align: center;
-            border: 1px solid #ced4da;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #444;
             border-radius: 6px;
             box-sizing: border-box;
         }
         .controls input[type="number"]:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: #ff7900;
         }
 
         button {
@@ -101,16 +106,19 @@
             padding: 14px;
             font-size: 1.1em;
             font-weight: bold;
-            color: white;
-            background-color: #27ae60;
+            color: #121212;
+            background-color: #ff7900;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             margin-top: 20px;
-            transition: background-color 0.3s;
+            transition: background-color 0.2s, transform 0.1s;
         }
         button:hover {
-            background-color: #219150;
+            background-color: #e66c00;
+        }
+        button:active {
+            transform: scale(0.98);
         }
         
         /* Botones de acción secundaria */
@@ -124,14 +132,34 @@
             padding: 10px;
             font-size: 1em;
         }
-        button.save { background-color: #3498db; }
-        button.save:hover { background-color: #2980b9; }
+        button.save { 
+            background-color: #2a2a2a; 
+            color: #ff9500; 
+            border: 1px solid #ff9500; 
+        }
+        button.save:hover { 
+            background-color: #ff9500; 
+            color: #121212; 
+        }
         
-        button.load { background-color: #9b59b6; }
-        button.load:hover { background-color: #8e44ad; }
+        button.load { 
+            background-color: #2a2a2a; 
+            color: #e0e0e0; 
+            border: 1px solid #555; 
+        }
+        button.load:hover { 
+            background-color: #444; 
+        }
 
-        button.reset { background-color: #e74c3c; }
-        button.reset:hover { background-color: #c0392b; }
+        button.reset { 
+            background-color: #3a1515; 
+            color: #ff5555; 
+            border: 1px solid #882222; 
+        }
+        button.reset:hover { 
+            background-color: #d32f2f; 
+            color: #ffffff; 
+        }
         
         table {
             width: 100%;
@@ -139,26 +167,27 @@
             border-collapse: collapse;
         }
         th, td {
-            border: 1px solid #e9ecef;
+            border: 1px solid #333;
             padding: 10px;
             text-align: center;
         }
         th {
-            background-color: #f8f9fa;
-            color: #495057;
+            background-color: #2a2a2a;
+            color: #ff7900;
             font-weight: 600;
         }
         td {
             font-size: 1.1em;
+            background-color: #1e1e1e;
         }
         .round-detail {
             font-size: 0.75em;
-            color: #7f8c8d;
+            color: #999;
             display: block;
             margin-top: 4px;
         }
         .negative {
-            color: #e74c3c;
+            color: #ff5555;
         }
     </style>
 </head>
@@ -298,7 +327,7 @@
             round++;
         }
 
-        // --- NUEVAS FUNCIONES DE GUARDADO --- //
+        // --- FUNCIONES DE GUARDADO --- //
 
         function saveGame() {
             const gameState = {
@@ -352,7 +381,6 @@
                 document.getElementById('total2').innerText = total2;
                 document.getElementById('historyBody').innerHTML = '';
                 
-                // Opcional: preguntar si también se quiere borrar el guardado
                 if(localStorage.getItem('burakoSaveData') && confirm("¿Deseas borrar también la partida que tenías guardada?")) {
                     localStorage.removeItem('burakoSaveData');
                 }

@@ -90,6 +90,12 @@
         .btn-index:hover {
             background-color: #c2185b;
         }
+        .btn-base64 {
+            background-color: #ff9800;
+        }
+        .btn-base64:hover {
+            background-color: #e68900;
+        }
         .opciones {
             margin: 5px 0 12px 0;
             font-size: 14px;
@@ -147,6 +153,19 @@
             <label for="nuevaPestanaIndex">Abrir en una nueva pestaña</label>
         </div>
         <button class="btn-index" onclick="buscarIndex()">Buscar Index Of 📁</button>
+
+
+        <hr>
+        <h2>BASE64</h2>
+        <h3>Decodificar base64 a enlace y abrir el sitio</h3>
+        <input type="text" id="entradaBase64" placeholder="Pegá acá el texto en base64" onkeypress="evaluarEnterBase64(event)">
+
+        <div class="opciones">
+            <input type="checkbox" id="nuevaPestanaBase64" checked>
+            <label for="nuevaPestanaBase64">Abrir en una nueva pestaña</label>
+        </div>
+        <button class="btn-base64" onclick="decodificarBase64()">Decodificar y abrir 🔓</button>
+        <div id="resultadoBase64" style="margin-top:12px; font-size:14px; color:#555; word-break:break-all; text-align:center;"></div>
 
     </div>
 
@@ -230,6 +249,55 @@
         function evaluarEnterIndex(event) {
             if (event.key === "Enter") {
                 buscarIndex();
+            }
+        }
+
+        // --- Funciones para la Sección 4 (Base64 a URL) ---
+        function decodificarBase64() {
+            const res = document.getElementById("resultadoBase64");
+            let texto = document.getElementById("entradaBase64").value.trim();
+
+            if (texto === "") {
+                alert("Por favor, pegá un texto en base64.");
+                return;
+            }
+
+            try {
+                // Soporta base64 URL-safe y relleno faltante
+                texto = texto.replace(/-/g, "+").replace(/_/g, "/").replace(/\s+/g, "");
+                while (texto.length % 4 !== 0) texto += "=";
+
+                const bin = atob(texto);
+                const url = new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))).trim();
+
+                if (!/^https?:\/\//i.test(url)) {
+                    res.textContent = "El resultado no es una URL válida: " + url;
+                    return;
+                }
+
+                res.innerHTML = "";
+                const a = document.createElement("a");
+                a.href = url;
+                a.target = "_blank";
+                a.rel = "noopener";
+                a.textContent = url;
+                res.appendChild(a);
+
+                document.getElementById("entradaBase64").value = "";
+
+                if (document.getElementById("nuevaPestanaBase64").checked) {
+                    window.open(url, '_blank');
+                } else {
+                    window.location.href = url;
+                }
+            } catch (e) {
+                res.textContent = "Texto base64 inválido.";
+            }
+        }
+
+        function evaluarEnterBase64(event) {
+            if (event.key === "Enter") {
+                decodificarBase64();
             }
         }
     </script>
